@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AyushLink – Emergency Response Live Demo</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light;
+--ink:#0f2742;--mut:#5b7088;--red:#e5384f;--blue:#2b7de9;--org:#f08a24;--grn:#14a56a;--line:#cfe0f3}
+html{height:100%}*,*:before,*:after{box-sizing:inherit}
+body{margin:0;min-height:100%;font-family:Manrope,system-ui,sans-serif;color:var(--ink);background:linear-gradient(160deg,#fff 0%,#eaf3ff 100%);display:flex;align-items:center;justify-content:center}
+.stage{width:min(100vw,calc(100vh*16/9));aspect-ratio:16/9;min-height:560px;padding:2.2% 3%;display:flex;flex-direction:column;gap:1.6%}
+header{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.brand b{font-size:26px;font-weight:800;letter-spacing:.04em}.brand span{display:block;font-size:13px;color:var(--mut)}
+.mid{text-align:center}.mid b{font-size:18px;font-weight:800;letter-spacing:.08em}.mid span{display:block;font-size:13px;color:var(--mut)}
+.badges{display:flex;gap:8px}.badge{font-size:12px;font-weight:700;padding:6px 12px;border-radius:99px;background:#fff;border:1px solid var(--line)}
+.badge.off{color:var(--red)}.badge.on{color:var(--blue)}
+.glass{background:rgba(255,255,255,.7);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.9);box-shadow:0 8px 28px rgba(30,80,150,.12);border-radius:20px}
+.main{flex:1;position:relative;padding:3% 2% 2%;display:flex;flex-direction:column;justify-content:space-between;min-height:0}
+.flow{position:relative;display:flex;justify-content:space-between;align-items:flex-start;padding-top:46px}
+.node{width:15%;display:flex;flex-direction:column;align-items:center;text-align:center;position:relative;z-index:2}
+.disc{width:clamp(70px,8.5vw,120px);aspect-ratio:1;border-radius:50%;background:#fff;border:3px solid var(--line);display:grid;place-items:center;font-size:clamp(32px,4vw,56px);box-shadow:0 6px 18px rgba(30,80,150,.14);transition:.4s}
+.node h4{margin:10px 0 2px;font-size:14px;font-weight:800}.node small{font-size:12px;color:var(--mut);min-height:30px}
+.cap{position:absolute;top:-40px;white-space:nowrap;font-size:12px;font-weight:800;padding:5px 10px;border-radius:99px;background:#fff;box-shadow:0 4px 12px rgba(0,0,0,.12);opacity:0;transform:translateY(6px);transition:.3s}
+.node.show .cap{opacity:1;transform:none}
+.track{position:absolute;left:8%;right:8%;top:calc(46px + clamp(35px,4.25vw,60px));height:4px;background:var(--line);border-radius:4px;z-index:1}
+.packet{position:absolute;z-index:5;width:20px;height:20px;border-radius:50%;background:var(--red);box-shadow:0 0 0 6px rgba(229,56,79,.25);opacity:0;transition:left 1.5s ease-in-out,top 1.5s ease-in-out,opacity .3s;transform:translate(-50%,-50%)}
+.packet.n{background:var(--grn);box-shadow:0 0 0 6px rgba(20,165,106,.25);border-radius:6px;width:auto;padding:4px 8px;color:#fff;font-size:11px;font-weight:800;white-space:nowrap}
+.arc{position:absolute;left:0;top:0;pointer-events:none;z-index:1}
+.arc path{fill:none;stroke:var(--grn);stroke-width:3;stroke-dasharray:7 7;opacity:0;transition:opacity .4s}
+.arc.on path{opacity:.8}
+.node.sos .disc{border-color:var(--red);box-shadow:0 0 0 8px rgba(229,56,79,.18),0 6px 18px rgba(229,56,79,.35)}
+.node.lora .disc{border-color:var(--blue);animation:pulse 1s infinite;--c:43,125,233}
+.node.asha .disc{border-color:var(--red);animation:pulse .7s infinite;--c:229,56,79;background:#fff2f4}
+.node.siren .disc{border-color:var(--org);animation:flash .5s infinite;--c:240,138,36}
+.node.ok .disc{border-color:var(--grn);background:#eafaf2}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(var(--c),.5)}100%{box-shadow:0 0 0 22px rgba(var(--c),0)}}
+@keyframes flash{50%{background:#fff0dc;box-shadow:0 0 0 18px rgba(240,138,36,.25)}}
+.route{position:relative;height:46px;margin:0 6%;display:flex;align-items:center}
+.road{flex:1;height:0;border-top:4px dashed var(--line);position:relative}
+.pin,.hq{font-size:26px;position:absolute;top:50%;transform:translateY(-55%)}.pin{left:-36px}.hq{right:-36px}
+.amb{position:absolute;top:50%;right:0;font-size:32px;transform:translateY(-60%) scaleX(1);transition:right 3s ease-in-out;z-index:3}
+.status{text-align:center;font-weight:800;font-size:15px;min-height:22px;transition:color .3s}
+.timeline{display:flex;padding:1.2% 2%;gap:6px}
+.step{flex:1;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:#8aa0b8;transition:.4s}
+.step i{flex:none;width:28px;height:28px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:800;background:#fff;transition:.4s}
+.step.active{color:var(--ink)}.step.active i{border-color:var(--blue);color:var(--blue);box-shadow:0 0 0 5px rgba(43,125,233,.18)}
+.step.done{color:var(--ink)}.step.done i{background:var(--grn);border-color:var(--grn);color:#fff}
+.ctl{display:flex;flex-direction:column;align-items:center;gap:6px}
+button{font:inherit;font-weight:800;font-size:17px;letter-spacing:.04em;color:#fff;background:linear-gradient(135deg,#e5384f,#c81e45);border:0;border-radius:99px;padding:14px 38px;cursor:pointer;box-shadow:0 8px 22px rgba(229,56,79,.4)}
+button:disabled{opacity:.55;cursor:default}button:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.hint{font-size:12px;color:var(--mut)}
+@media(prefers-reduced-motion:reduce){.packet,.amb{transition-duration:.01s}.disc{animation:none!important}}
+@media(max-width:800px){.stage{aspect-ratio:auto;padding:12px}.timeline{flex-wrap:wrap}.step{flex:1 1 45%}.cap{font-size:10px}.node small{display:none}}
+</style></head><body>
+<div class="stage">
+<header>
+<div class="brand"><b>AYUSHLINK</b><span>Your Village Health Companion</span></div>
+<div class="mid"><b>EMERGENCY RESPONSE</b><span>Offline • LoRa Powered • Rural Healthcare</span></div>
+<div class="badges"><span class="badge off">● INTERNET OFFLINE</span><span class="badge on">● LoRa LINK ACTIVE</span></div>
+</header>
+<section class="main glass" id="main">
+<div class="flow" id="flow">
+<div class="track"></div>
+<svg class="arc" id="arc"><path id="arcp"/></svg>
+<div class="packet" id="pk"></div>
+<div class="packet n" id="nt">🔔 EMERGENCY ALERT</div>
+<div class="node" id="n0"><span class="cap" id="c0" style="color:var(--red)">🚨 SOS TRIGGERED</span><div class="disc">🧑‍🦱📱</div><h4>PATIENT</h4><small>Presses SOS on phone</small></div>
+<div class="node" id="n1"><span class="cap" id="c1" style="color:var(--blue)">📡 SOS PACKET SENT</span><div class="disc">📡</div><h4>LoRa</h4><small>LoRa transmission</small></div>
+<div class="node" id="n2"><span class="cap" id="c2" style="color:var(--org)">🚨 SIREN RINGING</span><div class="disc">🚨</div><h4>SIREN</h4><small>Rings to alert ASHA</small></div>
+<div class="node" id="n3"><span class="cap" id="c3" style="color:var(--red)">🔔 ASHA NOTIFIED</span><div class="disc">👩‍⚕️</div><h4>ASHA WORKER</h4><small>Notified by the siren</small></div>
+<div class="node" id="n4"><span class="cap" id="c4" style="color:var(--grn)">✓ AMBULANCE NOTIFIED</span><div class="disc">🚑</div><h4>AMBULANCE</h4><small>Dispatched by ASHA</small></div>
+<div class="node" id="n5"><span class="cap" id="c5" style="color:var(--grn)">✓ PATIENT REACHED</span><div class="disc">📍</div><h4>PATIENT REACHED</h4><small>Help arrives</small></div>
+</div>
+<div class="route"><span class="pin">📍</span><div class="road"></div><span class="hq">🏥</span><span class="amb" id="amb">🚑</span></div>
+<div class="status" id="st"></div>
+</section>
+<section class="timeline glass" id="tl">
+<div class="step"><i>1</i>SOS Triggered</div><div class="step"><i>2</i>LoRa Transmission</div><div class="step"><i>3</i>Siren Rings</div><div class="step"><i>4</i>ASHA Notified</div><div class="step"><i>5</i>Ambulance Notified</div><div class="step"><i>6</i>Patient Reached</div>
+</section>
+<div class="ctl"><button id="go">▶ START EMERGENCY</button><span class="hint" id="hint">Press START EMERGENCY to begin the live demonstration.</span></div>
+</div>
+<script>
+const $=id=>document.getElementById(id),sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const nodes=[0,1,2,3,4,5].map(i=>$('n'+i)),steps=[...document.querySelectorAll('.step')],pk=$('pk'),nt=$('nt'),amb=$('amb'),st=$('st'),btn=$('go'),flow=$('flow');
+function ctr(i){const f=flow.getBoundingClientRect(),d=nodes[i].querySelector('.disc').getBoundingClientRect();return{x:d.left-f.left+d.width/2,y:d.top-f.top+d.height/2,top:d.top-f.top}}
+function put(el,p,on){el.style.transition='none';el.style.left=p.x+'px';el.style.top=p.y+'px';void el.offsetWidth;el.style.transition=''}
+function mv(el,p){el.style.left=p.x+'px';el.style.top=p.y+'px'}
+function msg(t,c){st.textContent=t;st.style.color=c}
+function stepSet(i,s){steps[i].className='step '+s}
+function reset(){nodes.forEach(n=>n.className='node');steps.forEach(s=>s.className='step');pk.style.opacity=0;nt.style.opacity=0;$('arc').classList.remove('on');
+amb.style.transition='none';amb.style.right='0';void amb.offsetWidth;amb.style.transition='';msg('','')}
+function arc(){const a=ctr(3),b=ctr(4),f=flow.getBoundingClientRect();const s=$('arc');s.setAttribute('width',f.width);s.setAttribute('height',f.height);
+const y=a.top-10;$('arcp').setAttribute('d',`M${a.x},${a.top} C${a.x},${y-30} ${b.x},${y-30} ${b.x},${b.top}`);s.classList.add('on');return{x:(a.x+b.x)/2,y:y-22}}
+async function run(){
+btn.disabled=true;btn.textContent='LIVE…';$('hint').textContent='Live demonstration running…';reset();await sleep(300);
+// 1 patient
+nodes[0].classList.add('sos','show');stepSet(0,'active');msg('🚨 SOS TRIGGERED — patient has no internet','var(--red)');
+let p0=ctr(0);put(pk,p0);pk.style.opacity=1;await sleep(1300);stepSet(0,'done');
+// 2 LoRa
+nodes[1].classList.add('lora','show');stepSet(1,'active');msg('📡 LoRa TRANSMISSION — SOS PACKET SENT','var(--blue)');mv(pk,ctr(1));await sleep(1600);
+// 3 Siren
+mv(pk,ctr(2));await sleep(1600);pk.style.opacity=0;nodes[1].classList.remove('lora');stepSet(1,'done');
+nodes[2].classList.add('siren','show');stepSet(2,'active');msg('🚨 SIREN RINGING — ASHA WORKER IS BEING ALERTED','var(--org)');await sleep(2000);
+// 4 ASHA notified
+nodes[3].classList.add('asha','show');stepSet(3,'active');msg('🔔 ASHA WORKER NOTIFIED — SOS RECEIVED','var(--red)');await sleep(2200);
+nodes[2].classList.remove('siren');nodes[2].classList.add('ok');stepSet(2,'done');
+stepSet(3,'done');nodes[3].classList.remove('asha');nodes[3].classList.add('ok');
+// 5 ambulance notified
+stepSet(4,'active');arc();put(nt,ctr(3));nt.style.left=ctr(3).x+'px';nt.style.top=ctr(3).top-10+'px';nt.style.opacity=1;
+msg('ASHA sending emergency notification…','var(--grn)');await sleep(200);mv(nt,{x:ctr(4).x,y:ctr(4).top-10});await sleep(1600);nt.style.opacity=0;
+nodes[4].classList.add('ok','show');stepSet(4,'done');msg('✓ EMERGENCY TRANSMITTED TO AMBULANCE','var(--grn)');await sleep(1200);
+// 6 ambulance moves
+msg('🚑 AMBULANCE EN ROUTE','var(--org)');stepSet(5,'active');
+const road=document.querySelector('.road');amb.style.right=(road.parentElement.clientWidth-0)+'px';await sleep(3100);
+nodes[5].classList.add('ok','show');stepSet(5,'done');msg('✓ PATIENT REACHED','var(--grn)');
+btn.disabled=false;btn.textContent='↻ REPLAY EMERGENCY';$('hint').textContent='Demo complete. Replay to run it again.';}
+btn.onclick=run;
+</script></body></html>
